@@ -181,13 +181,13 @@ impl EnumVariant {
         }
     }
 
-    fn specialize(&self, generic_values: &[Type], mappings: &[(&Path, &Type)]) -> Self {
+    fn specialize(&self, generic_values: &[Type], mappings: &[(&Path, &Type)], mangling_separator: &Option<String>) -> Self {
         Self::new(
-            mangle::mangle_name(&self.name, generic_values),
+            mangle::mangle_name(&self.name, generic_values, mangling_separator),
             self.discriminant,
             self.body
                 .as_ref()
-                .map(|&(ref name, ref ty)| (name.clone(), ty.specialize(generic_values, mappings))),
+                .map(|&(ref name, ref ty)| (name.clone(), ty.specialize(generic_values, mappings, mangling_separator))),
             self.cfg.clone(),
             self.documentation.clone(),
         )
@@ -502,14 +502,14 @@ impl Item for Enum {
             }
         }
 
-        let mangled_path = mangle::mangle_path(&self.path, generic_values);
+        let mangled_path = mangle::mangle_path(&self.path, generic_values, &library.get_mangling_separator());
         let monomorph = Enum::new(
             mangled_path,
             GenericParams::default(),
             self.repr,
             self.variants
                 .iter()
-                .map(|v| v.specialize(generic_values, &mappings))
+                .map(|v| v.specialize(generic_values, &mappings, library.get_mangling_separator()))
                 .collect(),
             self.tag.clone(),
             self.cfg.clone(),
