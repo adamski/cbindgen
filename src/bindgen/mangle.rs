@@ -46,7 +46,7 @@ fn internal_mangle_name(name: &str, generic_values: &[Type], last_in_parent: boo
                 ));
             }
             Type::Primitive(ref primitive) => {
-                mangled.push_str(primitive.to_repr_rust());
+                mangled.push_str(&make_ascii_titlecase(primitive.to_repr_rust()));
             }
             Type::MutRef(..)
             | Type::Ref(..)
@@ -65,6 +65,15 @@ fn internal_mangle_name(name: &str, generic_values: &[Type], last_in_parent: boo
     }
 
     mangled
+}
+
+fn make_ascii_titlecase(str: &str) -> String {
+    let string = str.to_owned();
+    let mut str = string.as_str();
+    if let Some(char) = str.get_mut(0..1) {
+        char.make_ascii_uppercase();
+    }
+    string
 }
 
 fn concat_separators(separator: &str, number: u8) -> String {
